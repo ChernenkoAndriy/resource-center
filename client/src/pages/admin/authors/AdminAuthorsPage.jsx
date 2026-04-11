@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import authorService from '../../../services/authorService';
 import AuthorForm from './AuthorForm';
 
@@ -49,7 +49,7 @@ const AdminAuthorsPage = ({ onBack }) => {
     };
 
     return (
-        <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
+        <div className="container mt-4">
             {isFormOpen && (
                 <AuthorForm
                     author={editingAuthor}
@@ -58,47 +58,57 @@ const AdminAuthorsPage = ({ onBack }) => {
                 />
             )}
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+            <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2>Керування авторами</h2>
                 <div>
-                    <button onClick={() => setIsFormOpen(true)} style={styles.btnAdd}>+ Додати автора</button>
-                    <button onClick={onBack} style={{ marginLeft: '10px' }}>Назад</button>
+                    <button className="btn btn-success me-2" onClick={() => setIsFormOpen(true)}>
+                        <i className="bi bi-person-plus me-1"></i>Додати автора
+                    </button>
+                    <button className="btn btn-outline-secondary" onClick={onBack}>Назад</button>
                 </div>
             </div>
 
-            {loading ? <p>Завантаження...</p> : (
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                    <tr style={{ backgroundColor: '#f4f4f4', textAlign: 'left' }}>
-                        <th style={styles.th}>ПІБ</th>
-                        <th style={styles.th}>Біографія</th>
-                        <th style={styles.th}>Дії</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {authors.map(author => (
-                        <tr key={author.id} style={{ borderBottom: '1px solid #eee' }}>
-                            <td style={styles.td}>{author.fullName}</td>
-                            <td style={styles.td}>{author.biography?.substring(0, 50)}...</td>
-                            <td style={styles.td}>
-                                <button onClick={() => { setEditingAuthor(author); setIsFormOpen(true); }} style={styles.btnEdit}>Редагувати</button>
-                                <button onClick={() => handleDelete(author.id)} style={styles.btnDelete}>Видалити</button>
-                            </td>
+            {loading ? (
+                <div className="text-center py-5">
+                    <div className="spinner-border text-primary" role="status"></div>
+                </div>
+            ) : (
+                <div className="table-responsive shadow-sm rounded">
+                    <table className="table table-hover align-middle mb-0">
+                        <thead className="table-light">
+                        <tr>
+                            <th className="px-4">ПІБ</th>
+                            <th>Біографія</th>
+                            <th className="text-end px-4">Дії</th>
                         </tr>
-                    ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        {authors.map(author => (
+                            <tr key={author.id}>
+                                <td className="px-4 fw-bold">{author.fullName}</td>
+                                <td className="text-muted small">{author.biography?.substring(0, 100)}...</td>
+                                <td className="text-end px-4">
+                                    <button
+                                        className="btn btn-sm btn-outline-primary me-2"
+                                        onClick={() => { setEditingAuthor(author); setIsFormOpen(true); }}
+                                    >
+                                        Редагувати
+                                    </button>
+                                    <button
+                                        className="btn btn-sm btn-outline-danger"
+                                        onClick={() => handleDelete(author.id)}
+                                    >
+                                        Видалити
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
         </div>
     );
-};
-
-const styles = {
-    th: { padding: '12px', borderBottom: '2px solid #ddd' },
-    td: { padding: '12px' },
-    btnAdd: { backgroundColor: '#2ecc71', color: 'white', border: 'none', padding: '10px 15px', borderRadius: '4px', cursor: 'pointer' },
-    btnEdit: { backgroundColor: '#3498db', color: 'white', border: 'none', padding: '5px 10px', marginRight: '5px', borderRadius: '4px', cursor: 'pointer' },
-    btnDelete: { backgroundColor: '#e74c3c', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }
 };
 
 export default AdminAuthorsPage;

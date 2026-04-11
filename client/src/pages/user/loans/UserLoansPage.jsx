@@ -1,96 +1,73 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import loanService from '../../../services/loanService';
 
-const UserLoansPage = ({ onBack }) => {
+const UserLoansPage = () => {
     const [loans, setLoans] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        loadMyLoans();
+        const loadLoans = async () => {
+            try {
+                const data = await loanService.getUserLoans();
+                setLoans(data);
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadLoans();
     }, []);
 
-    const loadMyLoans = async () => {
-        setLoading(true);
-        try {
-            const data = await loanService.getUserLoans();
-            setLoans(data);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     return (
-        <div style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2>Мої замовлені книги</h2>
-                <button onClick={onBack} style={styles.btnBack}>Назад</button>
-            </div>
+        <div className="container mt-4">
+            <h2 className="fw-bold mb-4">Мої позики</h2>
 
-            {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
-
-            {loading ? <p style={{ textAlign: 'center' }}>Завантаження історії позик...</p> : (
-                <table style={{ width: '100%', borderCollapse: 'collapse', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                    <thead>
-                    <tr style={{ backgroundColor: '#f8f9fa', textAlign: 'left' }}>
-                        <th style={styles.th}>Книга</th>
-                        <th style={styles.th}>Дата видачі</th>
-                        <th style={styles.th}>Термін повернення</th>
-                        <th style={styles.th}>Статус</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {loans.length === 0 ? (
-                        <tr><td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: '#7f8c8d' }}>У вас поки немає активних або минулих позик</td></tr>
-                    ) : (
-                        loans.map(loan => {
-                            const isOverdue = loan.status === 'overdue';
-                            const isReturned = loan.status === 'returned';
-
-                            return (
-                                <tr key={loan.id} style={{ borderBottom: '1px solid #eee' }}>
-                                    <td style={styles.td}>
-                                        <strong>{loan.book?.title}</strong>
-                                    </td>
-                                    <td style={styles.td}>
-                                        {new Date(loan.issueDate || loan.loanDate).toLocaleDateString()}
-                                    </td>
-                                    <td style={styles.td}>
-                                        {new Date(loan.dueDate).toLocaleDateString()}
-                                    </td>
-                                    <td style={styles.td}>
-                                            <span style={{
-                                                ...styles.badge,
-                                                backgroundColor: isReturned ? '#d7ffd7' : (isOverdue ? '#ffd7d7' : '#fff9c4'),
-                                                color: isReturned ? '#27ae60' : (isOverdue ? '#c0392b' : '#f39c12')
-                                            }}>
-                                                {isReturned ? 'Повернено' : (isOverdue ? 'Протерміновано' : 'На руках')}
+            {loading ? (
+                <div className="text-center py-5"><div className="spinner-border text-info" /></div>
+            ) : loans.length === 0 ? (
+                <div className="alert alert-info border-0 shadow-sm py-5 text-center">
+                    <i className="bi bi-journal-x display-4 d-block mb-3"></i>
+                    <p className="mb-0">У вас поки немає активних або завершених позик.</p>
+                </div>
+            ) : (
+                <div className="table-responsive shadow-sm rounded border bg-white">
+                    <table className="table table-hover align-middle mb-0">
+                        <thead className="table-light">
+                        <tr>
+                            <th className="px-4 py-3 text-uppercase small text-muted">Книга</th>
+                            <th className="py-3 text-uppercase small text-muted">Дата видачі</th>
+                            <th className="py-3 text-uppercase small text-muted">Дата повернення</th>
+                            <th className="py-3 text-uppercase small text-muted">Статус</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {loans.map(loan => (
+                            <tr key={loan.id}>
+                                <td className="px-4 py-3 fw-bold">{loan.book?.title}</td>
+                                <td className="py-3 text-muted">{new Date(loan.loanDate).toLocaleDateString()}</td>
+                                <td className="py-3 text-muted">
+                                    {loan.returnDate ? new Date(loan.returnDate).toLocaleDateString() : '—'}
+                                </td>
+                                <td className="py-3">
+                                    {loan.returnDate ? (
+                                        <span className="badge rounded-pill bg-success-subtle text-success border border-success px-3">
+                                                Повернено
                                             </span>
-                                    </td>
-                                </tr>
-                            );
-                        })
-                    )}
-                    </tbody>
-                </table>
+                                    ) : (
+                                        <span className="badge rounded-pill bg-warning-subtle text-warning border border-warning px-3">
+                                                На руках
+                                            </span>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
         </div>
     );
-};
-
-const styles = {
-    th: { padding: '15px', borderBottom: '2px solid #dee2e6' },
-    td: { padding: '15px' },
-    btnBack: { padding: '8px 16px', cursor: 'pointer' },
-    badge: {
-        padding: '5px 10px',
-        borderRadius: '15px',
-        fontSize: '12px',
-        fontWeight: 'bold',
-        display: 'inline-block'
-    }
 };
 
 export default UserLoansPage;

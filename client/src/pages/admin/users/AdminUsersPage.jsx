@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import userService from '../../../services/userService';
 
 const AdminUsersPage = ({ onBack }) => {
@@ -6,7 +6,7 @@ const AdminUsersPage = ({ onBack }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [actionId, setActionId] = useState(null); // Для індикації завантаження конкретної кнопки
+    const [actionId, setActionId] = useState(null);
 
     useEffect(() => {
         loadUsers();
@@ -16,7 +16,6 @@ const AdminUsersPage = ({ onBack }) => {
         setLoading(true);
         try {
             const data = await userService.getAllUsers();
-            // Передбачаємо, що бекенд поверне масив користувачів
             setUsers(Array.isArray(data) ? data : data.data || []);
         } catch (err) {
             setError(err.message);
@@ -31,8 +30,8 @@ const AdminUsersPage = ({ onBack }) => {
 
         try {
             setActionId(user.id);
-            await userService.toggleUserStatus(user.id, user.isActive);
-            await loadUsers(); // Перезавантажуємо список після змін
+            await userService.toggleUserStatus(user.id);
+            await loadUsers();
         } catch (err) {
             alert(err.message);
         } finally {
@@ -40,7 +39,6 @@ const AdminUsersPage = ({ onBack }) => {
         }
     };
 
-    // Фільтрація користувачів за ім'ям, прізвищем або поштою
     const filteredUsers = users.filter(u =>
         u.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         u.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -48,65 +46,67 @@ const AdminUsersPage = ({ onBack }) => {
     );
 
     return (
-        <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2>Керування всіма користувачами</h2>
-                <button onClick={onBack} style={{ padding: '8px 16px' }}>Назад</button>
+        <div className="container mt-4">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h2>Керування користувачами</h2>
+                <button className="btn btn-outline-secondary" onClick={onBack}>Назад</button>
             </div>
 
-            {/* Поле пошуку */}
-            <div style={{ marginBottom: '20px' }}>
-                <input
-                    type="text"
-                    placeholder="Пошук за іменем або email..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    style={{ width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid #ccc' }}
-                />
+            <div className="card shadow-sm border-0 mb-4">
+                <div className="card-body">
+                    <div className="input-group">
+                        <span className="input-group-text bg-white border-end-0">
+                            <i className="bi bi-search text-muted"></i>
+                        </span>
+                        <input
+                            type="text"
+                            className="form-control border-start-0 ps-0"
+                            placeholder="Пошук за ім'ям, прізвищем або email..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                </div>
             </div>
 
-            {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+            {error && <div className="alert alert-danger">{error}</div>}
 
-            {loading && users.length === 0 ? (
-                <p style={{ textAlign: 'center' }}>Завантаження...</p>
-            ) : (
-                <table style={{ width: '100%', borderCollapse: 'collapse', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
-                    <thead>
-                    <tr style={{ backgroundColor: '#f8f9fa', textAlign: 'left' }}>
-                        <th style={styles.th}>ID</th>
-                        <th style={styles.th}>Користувач</th>
-                        <th style={styles.th}>Email</th>
-                        <th style={styles.th}>Статус</th>
-                        <th style={styles.th}>Дії</th>
+            <div className="table-responsive shadow-sm rounded">
+                <table className="table table-hover align-middle mb-0">
+                    <thead className="table-light">
+                    <tr>
+                        <th className="px-4">ID</th>
+                        <th>Користувач</th>
+                        <th>Email</th>
+                        <th>Статус</th>
+                        <th className="text-end px-4">Дії</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {filteredUsers.length === 0 ? (
-                        <tr><td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>Користувачів не знайдено</td></tr>
+                    {loading && users.length === 0 ? (
+                        <tr><td colSpan="5" className="text-center py-5">Завантаження...</td></tr>
+                    ) : filteredUsers.length === 0 ? (
+                        <tr><td colSpan="5" className="text-center py-5 text-muted">Користувачів не знайдено</td></tr>
                     ) : (
                         filteredUsers.map(u => (
-                            <tr key={u.id} style={{ borderBottom: '1px solid #eee' }}>
-                                <td style={styles.td}>{u.id}</td>
-                                <td style={styles.td}>{u.firstName} {u.lastName}</td>
-                                <td style={styles.td}>{u.email}</td>
-                                <td style={styles.td}>
-                                        <span style={{
-                                            color: u.isActive ? '#27ae60' : '#e74c3c',
-                                            fontWeight: 'bold'
-                                        }}>
+                            <tr key={u.id}>
+                                <td className="px-4 text-muted small">#{u.id}</td>
+                                <td className="fw-bold">{u.firstName} {u.lastName}</td>
+                                <td>{u.email}</td>
+                                <td>
+                                        <span className={`badge rounded-pill ${u.isActive ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}`}>
                                             {u.isActive ? 'Активний' : 'Заблокований'}
                                         </span>
                                 </td>
-                                <td style={styles.td}>
+                                <td className="text-end px-4">
                                     <button
                                         onClick={() => handleToggleStatus(u)}
                                         disabled={actionId === u.id}
-                                        style={{
-                                            ...styles.actionBtn,
-                                            backgroundColor: u.isActive ? '#e74c3c' : '#27ae60'
-                                        }}
+                                        className={`btn btn-sm ${u.isActive ? 'btn-outline-danger' : 'btn-outline-success'} px-3`}
                                     >
-                                        {actionId === u.id ? 'Обробка...' : (u.isActive ? 'Блокувати' : 'Розблокувати')}
+                                        {actionId === u.id ? (
+                                            <span className="spinner-border spinner-border-sm me-1" role="status"></span>
+                                        ) : (u.isActive ? 'Блокувати' : 'Розблокувати')}
                                     </button>
                                 </td>
                             </tr>
@@ -114,22 +114,9 @@ const AdminUsersPage = ({ onBack }) => {
                     )}
                     </tbody>
                 </table>
-            )}
+            </div>
         </div>
     );
-};
-
-const styles = {
-    th: { padding: '12px', borderBottom: '2px solid #ddd', fontSize: '14px' },
-    td: { padding: '12px', fontSize: '14px' },
-    actionBtn: {
-        color: 'white',
-        border: 'none',
-        padding: '6px 12px',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        minWidth: '110px'
-    }
 };
 
 export default AdminUsersPage;

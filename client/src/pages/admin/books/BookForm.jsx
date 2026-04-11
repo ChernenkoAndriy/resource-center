@@ -1,39 +1,21 @@
-import { useState, useEffect } from 'react';
-import authorService from '../../../services/authorService';
+import React, { useState, useEffect } from 'react';
 
-const BookForm = ({ book, onSubmit, onCancel }) => {
-    const [authors, setAuthors] = useState([]);
+const BookForm = ({ book, authors, onSubmit, onCancel }) => {
     const [formData, setFormData] = useState({
-        title: '',
-        isbn: '',
-        summary: '',
-        authorId: ''
+        title: '', authorId: '', isbn: '', description: '', publishedYear: ''
     });
 
     useEffect(() => {
-        const fetchAuthors = async () => {
-            try {
-                const data = await authorService.getAllAuthors();
-                setAuthors(data);
-            } catch (err) {
-                console.error("Помилка завантаження авторів:", err);
-            }
-        };
-        fetchAuthors();
-
         if (book) {
             setFormData({
                 title: book.title || '',
+                authorId: book.author?.id || '',
                 isbn: book.isbn || '',
-                summary: book.summary || '',
-                authorId: book.author?.id || ''
+                description: book.description || '',
+                publishedYear: book.publishedYear || ''
             });
         }
     }, [book]);
-
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -41,66 +23,73 @@ const BookForm = ({ book, onSubmit, onCancel }) => {
     };
 
     return (
-        <div style={formStyles.overlay}>
-            <form onSubmit={handleSubmit} style={formStyles.modal}>
-                <h3>{book ? 'Редагувати книгу' : 'Додати нову книгу'}</h3>
-
-                <input
-                    name="title"
-                    placeholder="Назва книги"
-                    value={formData.title}
-                    onChange={handleChange}
-                    required
-                    style={formStyles.input}
-                />
-
-                <input
-                    name="isbn"
-                    placeholder="ISBN"
-                    value={formData.isbn}
-                    onChange={handleChange}
-                    required
-                    style={formStyles.input}
-                />
-
-                <select
-                    name="authorId"
-                    value={formData.authorId}
-                    onChange={handleChange}
-                    required
-                    style={formStyles.input}
-                >
-                    <option value="">Оберіть автора</option>
-                    {authors.map(a => (
-                        <option key={a.id} value={a.id}>{a.fullName}</option>
-                    ))}
-                </select>
-
-                <textarea
-                    name="summary"
-                    placeholder="Короткий опис"
-                    value={formData.summary}
-                    onChange={handleChange}
-                    style={{ ...formStyles.input, height: '80px' }}
-                />
-
-                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                    <button type="button" onClick={onCancel} style={formStyles.btnCancel}>Скасувати</button>
-                    <button type="submit" style={formStyles.btnSubmit}>
-                        {book ? 'Зберегти зміни' : 'Створити'}
-                    </button>
-                </div>
-            </form>
+        <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
+            <div className="modal-dialog modal-lg modal-dialog-centered">
+                <form onSubmit={handleSubmit} className="modal-content border-0 shadow-lg">
+                    <div className="modal-header bg-primary text-white">
+                        <h5 className="modal-title">{book ? 'Редагувати книгу' : 'Додати нову книгу'}</h5>
+                        <button type="button" className="btn-close btn-close-white" onClick={onCancel}></button>
+                    </div>
+                    <div className="modal-body p-4">
+                        <div className="row g-3">
+                            <div className="col-md-8">
+                                <label className="form-label fw-bold">Назва книги</label>
+                                <input
+                                    className="form-control"
+                                    value={formData.title}
+                                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                                    required
+                                />
+                            </div>
+                            <div className="col-md-4">
+                                <label className="form-label fw-bold">ISBN</label>
+                                <input
+                                    className="form-control"
+                                    value={formData.isbn}
+                                    onChange={(e) => setFormData({...formData, isbn: e.target.value})}
+                                    required
+                                />
+                            </div>
+                            <div className="col-md-6">
+                                <label className="form-label fw-bold">Автор</label>
+                                <select
+                                    className="form-select"
+                                    value={formData.authorId}
+                                    onChange={(e) => setFormData({...formData, authorId: e.target.value})}
+                                    required
+                                >
+                                    <option value="">Оберіть автора...</option>
+                                    {authors.map(a => <option key={a.id} value={a.id}>{a.fullName}</option>)}
+                                </select>
+                            </div>
+                            <div className="col-md-6">
+                                <label className="form-label fw-bold">Рік видання</label>
+                                <input
+                                    type="number"
+                                    className="form-control"
+                                    value={formData.publishedYear}
+                                    onChange={(e) => setFormData({...formData, publishedYear: e.target.value})}
+                                />
+                            </div>
+                            <div className="col-12">
+                                <label className="form-label fw-bold">Опис</label>
+                                <textarea
+                                    className="form-control"
+                                    rows="4"
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="modal-footer border-0 bg-light">
+                        <button type="button" className="btn btn-secondary" onClick={onCancel}>Закрити</button>
+                        <button type="submit" className="btn btn-primary px-4">Зберегти зміни</button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
-};
-
-const formStyles = {
-    overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
-    modal: { backgroundColor: 'white', padding: '25px', borderRadius: '8px', width: '400px', display: 'flex', flexDirection: 'column', gap: '15px' },
-    input: { padding: '10px', borderRadius: '4px', border: '1px solid #ddd', width: '100%', boxSizing: 'border-box' },
-    btnSubmit: { backgroundColor: '#2ecc71', color: 'white', border: 'none', padding: '10px', borderRadius: '4px', cursor: 'pointer' },
-    btnCancel: { backgroundColor: '#95a5a6', color: 'white', border: 'none', padding: '10px', borderRadius: '4px', cursor: 'pointer' }
 };
 
 export default BookForm;

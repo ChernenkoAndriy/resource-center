@@ -1,10 +1,17 @@
 const userRepository = require('../repositories/userRepository');
 
 class UserService {
-    async getAllUsers() {
-        return await userRepository.find({
-            order: { createdAt: "DESC" }
-        });
+    async getAllUsers(params = {}) {
+        const { search } = params;
+        const query = userRepository.createQueryBuilder("user");
+
+        if (search) {
+            query.where("user.firstName ILIKE :search OR user.lastName ILIKE :search OR user.email ILIKE :search",
+                { search: `%${search}%` });
+        }
+
+        query.orderBy("user.createdAt", "DESC");
+        return await query.getMany();
     }
 
     async toggleUserStatus(id) {

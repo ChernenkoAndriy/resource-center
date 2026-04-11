@@ -3,7 +3,7 @@ const userService = require('../../logic/services/userService');
 const userController = {
     getAll: async (req, res) => {
         try {
-            const users = await userService.getAllUsers();
+            const users = await userService.getAllUsers(req.query);
             res.json({ status: "success", data: users });
         } catch (error) {
             res.status(500).json({ status: "error", message: error.message });

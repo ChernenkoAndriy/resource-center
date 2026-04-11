@@ -41,7 +41,6 @@ function App() {
     const handleLoginSuccess = (userData) => {
         setUser(userData);
         localStorage.setItem('userData', JSON.stringify(userData));
-        // Нові редіректи після логіну
         navigate(userData.role === 'admin' ? '/admin/books' : '/books');
     };
 
@@ -55,49 +54,44 @@ function App() {
     if (!isInitialized) return null;
 
     return (
-        <>
+        <div className="min-vh-100 bg-light">
             {user && <Navbar user={user} onLogout={handleLogout} />}
 
-            <Routes>
-                <Route path="/login" element={
-                    !user ? <LoginPage
-                            onSwitch={() => navigate('/register')}
-                            onLoginSuccess={handleLoginSuccess}
-                            onForgot={() => navigate('/forgot-password')}
-                        />
-                        : <Navigate to={user.role === 'admin' ? '/admin/books' : '/books'} />
-                } />
-                <Route path="/register" element={<RegisterPage onSwitch={() => navigate('/login')} onSuccess={() => navigate('/info')} />} />
-                <Route path="/info" element={<InfoPage onBackToLogin={() => navigate('/login')} />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage onBack={() => navigate('/login')} />} />
-                <Route path="/reset-password" element={<ResetPasswordPage onComplete={() => navigate('/login')} />} />
+            <div className="container py-4">
+                <Routes>
+                    <Route path="/login" element={
+                        !user ? <LoginPage onLoginSuccess={handleLoginSuccess} onSwitch={() => navigate('/register')} onForgot={() => navigate('/forgot-password')} />
+                            : <Navigate to={user.role === 'admin' ? '/admin/books' : '/books'} />
+                    } />
+                    <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to="/" />} />
+                    <Route path="/info" element={<InfoPage onBackToLogin={() => navigate('/login')} />} />
+                    <Route path="/forgot-password" element={<ForgotPasswordPage onBack={() => navigate('/login')} />} />
+                    <Route path="/reset-password" element={<ResetPasswordPage onComplete={() => navigate('/login')} />} />
 
-                <Route path="/admin/books" element={
-                    user && user.role === 'admin' ? <AdminBooksPage /> : <Navigate to="/login" />
-                } />
-                <Route path="/admin/authors" element={
-                    user && user.role === 'admin' ? <AdminAuthorsPage /> : <Navigate to="/login" />
-                } />
-                <Route path="/admin/users" element={
-                    user && user.role === 'admin' ? <AdminUsersPage /> : <Navigate to="/login" />
-                } />
-                <Route path="/admin/loans" element={
-                    user && user.role === 'admin' ? <AdminLoansPage /> : <Navigate to="/login" />
-                } />
+                    {/* АДМІНСЬКІ РОУТИ */}
+                    <Route path="/admin/books" element={
+                        user?.role === 'admin' ? <AdminBooksPage onBack={() => navigate(-1)} /> : <Navigate to="/login" />
+                    } />
+                    <Route path="/admin/authors" element={
+                        user?.role === 'admin' ? <AdminAuthorsPage onBack={() => navigate(-1)} /> : <Navigate to="/login" />
+                    } />
+                    <Route path="/admin/users" element={
+                        user?.role === 'admin' ? <AdminUsersPage onBack={() => navigate(-1)} /> : <Navigate to="/login" />
+                    } />
+                    <Route path="/admin/loans" element={
+                        user?.role === 'admin' ? <AdminLoansPage onBack={() => navigate(-1)} /> : <Navigate to="/login" />
+                    } />
 
-                <Route path="/books" element={
-                    user ? <UserBooksPage /> : <Navigate to="/login" />
-                } />
-                <Route path="/books/:id" element={
-                    user ? <BookDetailsPage /> : <Navigate to="/login" />
-                } />
-                <Route path="/my-loans" element={
-                    user ? <UserLoansPage /> : <Navigate to="/login" />
-                } />
+                    {/* РОУТИ КОРИСТУВАЧА */}
+                    <Route path="/books" element={user ? <UserBooksPage /> : <Navigate to="/login" />} />
+                    <Route path="/books/:id" element={user ? <BookDetailsPage /> : <Navigate to="/login" />} />
+                    <Route path="/my-loans" element={user ? <UserLoansPage /> : <Navigate to="/login" />} />
 
-                <Route path="*" element={<Navigate to={user ? (user.role === 'admin' ? '/admin/books' : '/books') : "/login"} />} />
-            </Routes>
-        </>
+                    {/* Дефолтний редірект */}
+                    <Route path="*" element={<Navigate to={user ? (user.role === 'admin' ? '/admin/books' : '/books') : "/login"} />} />
+                </Routes>
+            </div>
+        </div>
     );
 }
 

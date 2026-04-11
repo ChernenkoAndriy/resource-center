@@ -2,23 +2,30 @@ const bookRepository = require('../repositories/bookRepository');
 
 const bookService = {
     async getAllBooks(params = {}) {
+        // Додаємо дефолтні значення для сортування
         const { title, authorName, sort = 'title', order = 'ASC' } = params;
 
         const query = bookRepository.createQueryBuilder("book")
             .leftJoinAndSelect("book.author", "author");
 
+        // Серверний пошук за назвою
         if (title) {
             query.andWhere("book.title ILIKE :title", { title: `%${title}%` });
         }
 
+        // Серверний пошук за автором
         if (authorName) {
             query.andWhere("author.fullName ILIKE :authorName", { authorName: `%${authorName}%` });
         }
 
-        query.orderBy(`book.${sort}`, order.toUpperCase());
+        // Динамічне сортування на рівні БД
+        const validSortFields = ['title', 'isbn', 'isActive'];
+        const sortField = validSortFields.includes(sort) ? `book.${sort}` : 'book.title';
+        query.orderBy(sortField, order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC');
 
         return await query.getMany();
     },
+
     async getAvailableBooks(params = {}) {
         const { title, authorName, sort = 'title', order = 'ASC' } = params;
 
@@ -28,7 +35,7 @@ const bookService = {
                 activeStatuses: ['active', 'overdue']
             })
             .where("book.isActive = :isActive", { isActive: true })
-            .andWhere("loan.id IS NULL");
+            .andWhere("loan.id IS NULL"); // Тільки ті, що не в оренді
 
         if (title) {
             query.andWhere("book.title ILIKE :title", { title: `%${title}%` });
@@ -38,7 +45,7 @@ const bookService = {
             query.andWhere("author.fullName ILIKE :authorName", { authorName: `%${authorName}%` });
         }
 
-        query.orderBy(`book.${sort}`, order.toUpperCase());
+        query.orderBy(`book.${sort}`, order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC');
 
         return await query.getMany();
     },

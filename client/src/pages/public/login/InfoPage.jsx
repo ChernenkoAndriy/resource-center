@@ -1,17 +1,30 @@
+import React from 'react';
+
 const InfoPage = ({ onBackToLogin }) => {
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px', textAlign: 'center' }}>
-            <div style={{ maxWidth: '400px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
-                <h2 style={{ color: '#2c3e50' }}>Майже готово! 📧</h2>
-                <p>Ми надіслали лист для підтвердження на вашу електронну адресу.</p>
-                <p>Будь ласка, перевірте пошту (та папку Спам) і натисніть на посилання у листі, щоб активувати акаунт.</p>
-                <hr style={{ margin: '20px 0' }} />
-                <button
-                    onClick={onBackToLogin}
-                    style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '4px' }}
-                >
-                    Повернутися до входу
-                </button>
+        <div className="container mt-5">
+            <div className="row justify-content-center">
+                <div className="col-md-6 col-lg-5">
+                    <div className="card shadow border-0 text-center">
+                        <div className="card-body p-5">
+                            <div className="mb-4">
+                                <i className="bi bi-envelope-check text-success" style={{ fontSize: '4rem' }}></i>
+                            </div>
+                            <h2 className="card-title fw-bold mb-3">Майже готово! 📧</h2>
+                            <p className="text-muted mb-4">
+                                Ми надіслали лист для підтвердження на вашу електронну адресу.
+                                Будь ласка, перевірте пошту (та папку <strong>Спам</strong>) і натисніть на посилання у листі, щоб активувати акаунт.
+                            </p>
+                            <hr className="my-4" />
+                            <button
+                                onClick={onBackToLogin}
+                                className="btn btn-primary btn-lg w-100 shadow-sm"
+                            >
+                                Повернутися до входу
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
